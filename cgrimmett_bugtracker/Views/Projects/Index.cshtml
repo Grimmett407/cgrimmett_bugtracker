@@ -1,0 +1,125 @@
+﻿@using PagedList;
+@using PagedList.Mvc;
+@model IPagedList<cgrimmett_bugtracker.Models.CodeFirst.Project>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="content-header">
+    <h1>
+        Projects
+        <small>All</small>
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Projects</a></li>
+        <li class="active">All</li>
+    </ol>
+</section>
+
+@if (User.IsInRole("Admin") || User.IsInRole("Project Manager"))
+{
+    <p>
+        @Html.ActionLink("Create New", "Create")
+    </p>
+}
+
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                @*<div class="box-header">
+                </div>*@
+                <!-- /.box-header -->
+                <div class="box-body">
+
+                    <table id="example2" class="tablesorter table table-bordered table-hover ws_data_table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Title
+                                </th>
+                                <th>
+                                    Body
+                                </th>
+                                <th>
+                                    Tickets
+                                </th>
+                                <th>
+                                    Created Date
+                                </th>
+                                <th>
+                                    IsActive
+                                </th>
+                                <th>
+                                    Assigned
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Title)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Body)
+                                    </td>
+                                    <td>
+                                        @item.Tickets.Count()
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.CreatedDate)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.IsActive)
+                                    </td>
+                                    <td>
+                                        @foreach(var user in item.Users)
+                                        {
+                                            <div>
+                                                @user.DisplayName
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        @Html.ActionLink("Details", "Details", new { id = item.Id })
+                                        @if (User.IsInRole("Admin") || User.IsInRole("Project Manager"))
+                                        {
+                                            <span>|</span>
+                                            @Html.ActionLink("Edit", "Edit", new { id = item.Id }) <span>|</span>
+                                                @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <script>
+                        $(function () {
+                            $('#example1').DataTable()
+                            $('#example2').DataTable({
+                                'paging': true,
+                                'lengthChange': false,
+                                'searching': false,
+                                'ordering': true,
+                                'info': true,
+                                'autoWidth': false
+                            })
+                        })
+                    </script>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center">
+        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of
+        @Model.PageCount @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+    </div>
+</section>

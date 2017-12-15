@@ -64,6 +64,23 @@ namespace cgrimmett_bugtracker.Models
 
     public class RegisterViewModel
     {
+        public string TimeZone { get; set; }
+
+        [Required]
+        [DataType(DataType.Text)]
+        [Display(Name = "DisplayName")]
+        public string DisplayName { get; set; }
+
+        [Required]
+        [DataType(DataType.Text)]
+        [Display(Name = "FirstName")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [DataType(DataType.Text)]
+        [Display(Name = "LastName")]
+        public string LastName { get; set; }
+
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]

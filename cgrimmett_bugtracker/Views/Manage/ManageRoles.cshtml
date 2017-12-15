@@ -1,0 +1,56 @@
+﻿@model cgrimmett_bugtracker.Models.ManageRoleViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Manage Users</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.DisplayName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.FirstName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.LastName)
+        </th>
+        <th>
+        @Html.DisplayNameFor(model => model.)
+    </th>
+    <th>
+        @Html.DisplayNameFor(model => model.)
+    </th>
+        <th></th>
+    </tr>
+
+    @foreach (var users in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => users.DisplayName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => users.FirstName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => users.LastName)
+            </td>
+            <td>
+        @Html.DisplayFor(modelItem => users.Roles)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => users.Email)
+    </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = users.Id }) |
+                @Html.ActionLink("Details", "Details", new { id = users.Id }) |
+                @Html.ActionLink("Delete", "Delete", new { id = users.Id })
+            </td>
+        </tr>
+    }
+
+</table>
+

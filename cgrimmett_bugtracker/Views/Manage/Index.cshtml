@@ -3,10 +3,12 @@
     ViewBag.Title = "Manage";
 }
 
-<h2>@ViewBag.Title.</h2>
+
+<h2>@ViewBag.FirstName</h2>
 
 <p class="text-success">@ViewBag.StatusMessage</p>
 <div>
+    
     <h4>Change your account settings</h4>
     <hr />
     <dl class="dl-horizontal">
@@ -56,6 +58,19 @@
                 }
             </dd>
         *@
+        @if(User.IsInRole("Admin") || User.IsInRole("Project Manager"))
+        {
+            <dt>Manage Roles:</dt>
+            <dd>
+                [@Html.ActionLink("Manage Roles", "Index", "Admin")]
+            </dd>
+        }
+
+        <dt>Change Name:</dt>
+        <dd>
+            [@Html.ActionLink("Change Name", "ChangeName")]
+        </dd>
+
         <dt>Two-Factor Authentication:</dt>
         <dd>
             <p>

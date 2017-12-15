@@ -11,15 +11,49 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using cgrimmett_bugtracker.Models;
+using System.Net.Mail;
+using System.Web.Configuration;
+using System.Net;
 
 namespace cgrimmett_bugtracker
 {
     public class EmailService : IIdentityMessageService
     {
-        public Task SendAsync(IdentityMessage message)
+        public async Task SendAsync(IdentityMessage message)
         {
-            // Plug in your email service here to send an email.
-            return Task.FromResult(0);
+            var GmailUsername = WebConfigurationManager.AppSettings["username"];
+            var GmailPassword = WebConfigurationManager.AppSettings["password"];
+            var host = WebConfigurationManager.AppSettings["host"];
+            int port = Convert.ToInt32(WebConfigurationManager.AppSettings["port"]);
+
+            using (var smtp = new SmtpClient() // using statement
+            {
+                Host = host,
+                Port = port,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(GmailUsername, GmailPassword)
+            })
+
+            using (var email = new MailMessage("Blog Email<Cgrimmett407@gmail.com>", message.Destination)
+            {
+                Subject = message.Subject,
+                IsBodyHtml = true,
+                Body = message.Body
+            })
+
+            {
+                try // try catch prevents any exception screens (red or yellow badrequest type pages)
+                {
+                    await smtp.SendMailAsync(email);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    await Task.FromResult(0);
+                }
+            };
         }
     }
 

@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
+using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace cgrimmett_bugtracker.Models
 {
@@ -12,6 +13,9 @@ namespace cgrimmett_bugtracker.Models
         public string PhoneNumber { get; set; }
         public bool TwoFactor { get; set; }
         public bool BrowserRemembered { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string DisplayName { get; set; }
     }
 
     public class ManageLoginsViewModel
@@ -56,6 +60,36 @@ namespace cgrimmett_bugtracker.Models
         [Display(Name = "Confirm new password")]
         [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
+    }
+
+    public class ManageRoleViewModel
+    {
+        ApplicationUser User { get; set; }
+        ICollection<IdentityRole> Roles { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string DisplayName { get; set; }
+        public string Role { get; set; }
+
+        //Make AssignTo value to display where users are assigned to.
+    }
+
+    public class ChangeNameViewModel
+    {
+        [Required]
+        [DataType(DataType.Text)]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [DataType(DataType.Text)]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; }
+
+        [Required]
+        [DataType(DataType.Text)]
+        [Display(Name = "Display Name")]
+        public string DisplayName { get; set; }
     }
 
     public class AddPhoneNumberViewModel

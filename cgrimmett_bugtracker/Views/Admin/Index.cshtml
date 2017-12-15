@@ -1,0 +1,33 @@
+﻿@{
+    ViewBag.Title = "Admin Dashboard";
+}
+
+<div class="jumbotron text-center">
+    <h1>Admin Manage Portal</h1>
+    <p class="lead">Manage projects, tickets and users from this page.</p>
+</div>
+
+<div class="row">
+    
+    <div class="col-md-4">
+        <h2>Manage Projects</h2>
+        <p>
+            View a list of the current projects along with their information.
+        </p>
+        <p><a class="btn btn-default" href="@Url.Action("Index", "Projects")">View &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Manage Tickets</h2>
+        <p>
+            View a list of the current tickets along with their information.
+        </p>
+        <p><a class="btn btn-default" href="@Url.Action("Index", "Tickets")">View &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Manage Users</h2>
+        <p>
+            View a list of the current users along with their information.
+        </p>
+        <p><a class="btn btn-default" href="@Url.Action("UserList", "Admin")">View &raquo;</a></p>
+    </div>
+</div>

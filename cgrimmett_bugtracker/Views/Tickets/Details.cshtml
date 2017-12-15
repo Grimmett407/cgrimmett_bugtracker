@@ -1,0 +1,294 @@
+﻿@using Microsoft.AspNet.Identity;
+@model cgrimmett_bugtracker.Models.CodeFirst.Ticket
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="content-header">
+    <h1>
+        @Model.Title
+        <small>Details</small>
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="@if (User.IsInRole("Submitter") )
+        {
+            @Url.Action("SubmitterTickets", "Tickets")
+        }
+        @if (User.IsInRole("Developer") )
+        {
+            @Url.Action("AssignedTickets", "Tickets")
+        }
+        @if (User.IsInRole("Project Manager") )
+        {
+            @Url.Action("AssignedTickets", "Tickets")
+        }
+                @if (User.IsInRole("Admin") )
+        {
+            @Url.Action("Index", "Tickets")
+        }
+            "><i class="fa fa-dashboard"></i> Tickets</a></li>
+        <li class="active">Details</li>
+    </ol>
+</section>
+<hr />
+@*<div class="col-lg-12" style="margin-top:20px;">*@
+    <section class="col-lg-6 connectedSortable">
+        <!-- quick email widget -->
+        <div class="box box-info">
+            <div class="box-header">
+                <i class="fa fa-clipboard"></i>
+                <h3 class="box-title">Ticket Details</h3>
+                <hr />
+                <!-- tools box -->
+                <!-- /. tools -->
+            </div>
+            <dl class="dl-horizontal">
+                <dt>
+                        @Html.DisplayNameFor(model => model.Title)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.Title)
+                    </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => model.Body)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.Body)
+                </dd>
+                <dt>
+                    Type
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.TicketType.Name)
+                </dd>
+
+                <dt>
+                    Prority
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.TicketPriority.Name)
+                </dd>
+
+                <dt>
+                    Status
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.TicketStatus.Name)
+                </dd>
+                <dt>
+                    Assigned Developer
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.AssignedToUser.FirstName)
+                </dd>
+                <dt>
+                    Created By
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.AuthorUser.FirstName)
+                </dd>
+                <dt>
+                    Project
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.Project.Title)
+                </dd>
+                <dt>
+                    @Html.DisplayNameFor(model => model.CreatedDate)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.CreatedDate)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => model.UpdatedDate)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.UpdatedDate)
+                </dd>
+            </dl>
+            <p class="text-center">
+                @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+                @Html.ActionLink("Back to List", "Index")
+            </p>
+            <hr />
+        </div>
+    </section>
+    <section class="col-lg-6 connectedSortable">
+        
+            @foreach (var history in Model.TicketHistories)
+            {
+                <div class="well text-center">
+                    <div>@Html.DisplayFor(modelhistory => history.Property) Change: </div>
+                    <br />
+                    <div>@Html.DisplayFor(modelhistory => history.NewValue)</div>
+                </div>
+            }
+        
+    </section>
+@*</div>*@
+
+
+<!-------Attachments---------->
+<div class="col-lg-12" style="margin-top:20px;">
+    <section class="col-lg-6 connectedSortable">
+        <!-- quick email widget -->
+        <div class="box box-info">
+            <div class="box-header">
+                <i class="fa fa-envelope"></i>
+                <h3 class="box-title">Attachments</h3>
+                <!-- tools box -->
+                <!-- /. tools -->
+            </div>
+
+            @if (User.Identity.GetUserId() == Model.AssignedToUserId || User.Identity.GetUserId() == Model.AuthorUserId ||
+            User.IsInRole("Project Manager") || User.IsInRole("Admin"))
+            {
+                <div class="box-body">
+                    <h5>Add Attachment</h5>
+                    @using (Html.BeginForm("CreateAttachment", "Tickets", FormMethod.Post, new { enctype = "Multipart/form-data" }))
+                    {
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="number" name="TicketId" value="@Model.Id" hidden />
+
+                        <div>
+                            @*class for rich text editor textarea*@
+                            <textarea class="" placeholder="Description..." name="Description"
+                                      style="width: 100%; height: 125px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"></textarea>
+                        </div>
+
+                        <label class="control-label">Upload File</label>
+
+                            <div class="form-group" style="padding-bottom:20px;">
+                                <div class="col-md-10">
+                                    <input name="image" type="file" class="form-control" id="fileUpload" />
+                                </div>
+                            </div>
+
+                            <div class="box-footer clearfix">
+                                <input class="pull-right btn btn-default" type="submit" value="Share" />
+                                @*<i class="fa fa-arrow-circle-right"></i>*@
+                            </div>
+                    }
+                </div>
+            }
+
+
+
+            @foreach (var attach in Model.TicketAttachments)
+            {
+                if (attach != null)
+                {
+                    <div class="well comText">
+                        <div class="post-meta comHead">@Html.DisplayFor(modelattachment => attach.FileName)</div>
+                        <div class="post-meta" style="padding-bottom:10px;">@Html.DisplayFor(modelattachment => attach.Description)</div>
+                        <div class="post-meta pull-right">@attach.CreatedDate.ToString("d")</div>
+                        <img src="@attach.MediaUrl" class="post-meta img-responsive" />
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("Project Manager") || User.Identity.GetUserId() == attach.AuthorUserId ||
+                                User.Identity.GetUserId() == Model.AssignedToUserId) // author id and user id is going to be the same number
+                        {
+                            <div>
+                                @Html.ActionLink("Edit", "Edit", "TicketAttachments", new { id = attach.Id }, null) <span> | </span>
+                                @Html.ActionLink("Delete", "Delete", "TicketAttachments", new { id = attach.Id }, null)
+                            </div>
+
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </section>
+</div>
+<br />
+
+
+
+<div class="col-md-12" style="margin-top:20px;">
+
+    @*<div class="vl"></div>
+        <style>
+            .vl {
+                border-bottom: 1px solid grey;
+                width: 550px;
+                padding-bottom:15px;
+            }
+        </style>*@
+
+
+    <!------------Comment Code----------------->
+    <section class="col-lg-6 connectedSortable">
+        <!-- quick email widget -->
+        <div class="box box-info">
+            <div class="box-header">
+                <i class="fa fa-comment"></i>
+                <h3 class="box-title">Comments</h3>
+                <!-- tools box -->
+                <!-- /. tools -->
+            </div>
+            <hr />
+            @if (User.Identity.GetUserId() == Model.AssignedToUserId || User.Identity.GetUserId() == Model.AuthorUserId ||
+            User.IsInRole("Project Manager") || User.IsInRole("Admin"))
+            {
+                <div class="box-body">
+                    <h5>Leave a Comment</h5>
+                    @using (Html.BeginForm("CommentCreate", "Tickets", FormMethod.Post, new { enctype = "Multipart/form-data" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <input type="number" name="TicketId" value="@Model.Id" hidden />
+                        <div style="padding-bottom:15px;">
+                            <textarea type="text" name="Body" rows="4" class="form-control" required placeholder="Add a comment..."></textarea>
+                        </div>
+                        <div>
+                            <input class="btn btn-default" type="submit" value="Share" />
+                        </div>
+                            <br />
+                    }
+                </div>
+            }
+            else
+            {
+                @Html.ActionLink("Login to leave a comment.", "Login", "Account")
+            }
+
+            @foreach (var comment in Model.TicketComments)
+            {
+                if (comment != null)
+                {
+                    <div class="well comText">
+                        <div class="post-meta comHead">@Html.DisplayFor(modelcomment => comment.AuthorUser.DisplayName)</div>
+                        <div class="post-meta" style="padding-bottom:10px;">@Html.DisplayFor(modelcomment => comment.Body)</div>
+                        <div class="post-meta pull-right">@comment.CreatedDate.ToString("d")</div>
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("Project Manager") || User.Identity.GetUserId() == comment.AuthorUserId ||
+User.Identity.GetUserId() == Model.AssignedToUserId) // author id and user id is going to be the same number
+                        {
+                            <div>
+                                @Html.ActionLink("Edit", "Edit", "TicketComments", new { id = comment.Id }, null) <span> | </span>
+                                @Html.ActionLink("Delete", "Delete", "TicketComments", new { id = comment.Id }, null)
+                            </div>
+
+                        }
+                    </div>
+
+                }
+            }
+        </div>
+    </section>
+</div>

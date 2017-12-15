@@ -7,11 +7,13 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using cgrimmett_bugtracker.Models;
+using System.Data.Entity;
+using cgrimmett_bugtracker.Models.Helpers;
 
 namespace cgrimmett_bugtracker.Controllers
 {
     [Authorize]
-    public class ManageController : Controller
+    public class ManageController : Universal
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
@@ -32,9 +34,9 @@ namespace cgrimmett_bugtracker.Controllers
             {
                 return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
-            private set 
-            { 
-                _signInManager = value; 
+            private set
+            {
+                _signInManager = value;
             }
         }
 
@@ -54,6 +56,7 @@ namespace cgrimmett_bugtracker.Controllers
         // GET: /Manage/Index
         public async Task<ActionResult> Index(ManageMessageId? message)
         {
+            
             ViewBag.StatusMessage =
                 message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
                 : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
@@ -72,8 +75,35 @@ namespace cgrimmett_bugtracker.Controllers
                 Logins = await UserManager.GetLoginsAsync(userId),
                 BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId)
             };
+            ViewBag.DisplayName = model.DisplayName;
             return View(model);
         }
+
+        ////Manage Role for admin only
+        //[Authorize(Roles = "Admin")]
+        //public ActionResult ManageRoles(string id)
+        //{
+        //    var model = new UserRolesHelper();
+        //    var user = UserManager.FindById(User.Identity.GetUserId());
+        //    if (user != null)
+        //    {
+        //       model.
+        //    }
+
+        //    return View(model);
+        //}
+
+        ////Manage Role for admin only
+        //[Authorize(Roles = "Admin")]
+        //public ActionResult ManageRoles(UserRolesHelper model)
+        //{
+        //    var user = UserManager.FindById(User.Identity.GetUserId());
+        //    if (!ModelState.IsValid)
+        //    {
+
+        //    }
+        //    return View("ManageRoles");
+        //}
 
         //
         // POST: /Manage/RemoveLogin
@@ -213,6 +243,47 @@ namespace cgrimmett_bugtracker.Controllers
             return RedirectToAction("Index", new { Message = ManageMessageId.RemovePhoneSuccess });
         }
 
+        //Get: Change Name 
+        public ActionResult ChangeName()
+        {
+            var user = UserManager.FindById(User.Identity.GetUserId());
+            if (user != null)
+            {
+                var model = new ChangeNameViewModel();
+
+                model.DisplayName = user.DisplayName;
+                model.FirstName = user.FirstName;
+                model.LastName = user.LastName;
+                return View(model);
+            }
+            else
+            {
+                return RedirectToAction("Index");
+            }
+        }
+
+        //Post: Change Name...
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ChangeName(ChangeNameViewModel model)
+        {
+            var user = UserManager.FindById(User.Identity.GetUserId());
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            if (user != null)
+            {
+                user.DisplayName = model.DisplayName;
+                user.FirstName = model.FirstName;
+                user.LastName = model.FirstName;
+                UserManager.Update(user);
+                
+            }
+            return RedirectToAction("Index", new { Message = ManageMessageId.ChangeNameSuccess });
+        }
+
+
         //
         // GET: /Manage/ChangePassword
         public ActionResult ChangePassword()
@@ -333,7 +404,7 @@ namespace cgrimmett_bugtracker.Controllers
             base.Dispose(disposing);
         }
 
-#region Helpers
+        #region Helpers
         // Used for XSRF protection when adding external logins
         private const string XsrfKey = "XsrfId";
 
@@ -344,6 +415,8 @@ namespace cgrimmett_bugtracker.Controllers
                 return HttpContext.GetOwinContext().Authentication;
             }
         }
+
+        public object UserManger { get; private set; }
 
         private void AddErrors(IdentityResult result)
         {
@@ -377,6 +450,7 @@ namespace cgrimmett_bugtracker.Controllers
         {
             AddPhoneSuccess,
             ChangePasswordSuccess,
+            ChangeNameSuccess,
             SetTwoFactorSuccess,
             SetPasswordSuccess,
             RemoveLoginSuccess,
@@ -384,6 +458,6 @@ namespace cgrimmett_bugtracker.Controllers
             Error
         }
 
-#endregion
+        #endregion
     }
 }

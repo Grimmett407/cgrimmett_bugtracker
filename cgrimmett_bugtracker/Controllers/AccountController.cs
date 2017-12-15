@@ -9,11 +9,13 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using cgrimmett_bugtracker.Models;
+using cgrimmett_bugtracker.Models.Helpers;
+using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace cgrimmett_bugtracker.Controllers
 {
     [Authorize]
-    public class AccountController : Controller
+    public class AccountController : Universal
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
@@ -22,7 +24,7 @@ namespace cgrimmett_bugtracker.Controllers
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
@@ -34,9 +36,9 @@ namespace cgrimmett_bugtracker.Controllers
             {
                 return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
-            private set 
-            { 
-                _signInManager = value; 
+            private set
+            {
+                _signInManager = value;
             }
         }
 
@@ -58,6 +60,10 @@ namespace cgrimmett_bugtracker.Controllers
         public ActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
+            ///Getting "Guest" users by email.
+            var role = db.Users.Where(u => u.Email == "email@email.com" || u.Email == "email1@email.com" || u.Email == "email2@email.com" || u.Email == "email3@email.com").ToList();
+            ViewBag.DemoUser = new SelectList(role, "Email", "DisplayName");
+
             return View();
         }
 
@@ -70,6 +76,8 @@ namespace cgrimmett_bugtracker.Controllers
         {
             if (!ModelState.IsValid)
             {
+                var role = db.Users.Where(u => u.Email == "email@email.com" || u.Email == "email1@email.com" || u.Email == "email2@email.com" || u.Email == "email3@email.com").ToList();
+                ViewBag.DemoUser = new SelectList(role, "Email", "DisplayName", model.Email);
                 return View(model);
             }
 
@@ -120,7 +128,7 @@ namespace cgrimmett_bugtracker.Controllers
             // If a user enters incorrect codes for a specified amount of time then the user account 
             // will be locked out for a specified amount of time. 
             // You can configure the account lockout settings in IdentityConfig
-            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent:  model.RememberMe, rememberBrowser: model.RememberBrowser);
+            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe, rememberBrowser: model.RememberBrowser);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -139,6 +147,8 @@ namespace cgrimmett_bugtracker.Controllers
         [AllowAnonymous]
         public ActionResult Register()
         {
+            var Timezones = TimeZoneInfo.GetSystemTimeZones();
+            ViewBag.TimeZone = new SelectList(Timezones, "Id", "Id");
             return View();
         }
 
@@ -151,12 +161,31 @@ namespace cgrimmett_bugtracker.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+
+                var user = new ApplicationUser
+                {
+                    LastName = model.LastName,
+                    FirstName = model.FirstName,
+                    DisplayName = model.DisplayName,
+                    UserName = model.Email,
+                    Email = model.Email,
+
+                };
                 var result = await UserManager.CreateAsync(user, model.Password);
+
+                ApplicationDbContext context = new ApplicationDbContext();
+
+                var userManager = new UserManager<ApplicationUser>(
+                        new UserStore<ApplicationUser>(context));
+
+                var submitter = userManager.FindByEmail(model.Email).Id;
+                userManager.AddToRole(submitter, "Submitter");
+
+
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
@@ -203,7 +232,7 @@ namespace cgrimmett_bugtracker.Controllers
             if (ModelState.IsValid)
             {
                 var user = await UserManager.FindByNameAsync(model.Email);
-                if (user == null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
+                if (user == null)
                 {
                     // Don't reveal that the user does not exist or is not confirmed
                     return View("ForgotPasswordConfirmation");
@@ -211,10 +240,10 @@ namespace cgrimmett_bugtracker.Controllers
 
                 // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                 // Send an email with this link
-                // string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
-                // var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);		
-                // await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>");
-                // return RedirectToAction("ForgotPasswordConfirmation", "Account");
+                string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
+                var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>");
+                return RedirectToAction("ForgotPasswordConfirmation", "Account");
             }
 
             // If we got this far, something failed, redisplay form

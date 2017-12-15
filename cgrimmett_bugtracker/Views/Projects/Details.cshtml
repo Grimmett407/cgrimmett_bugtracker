@@ -1,0 +1,201 @@
+﻿@model cgrimmett_bugtracker.Models.CodeFirst.Project
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<section class="content-header">
+    <h1>
+        @Model.Title
+        <small>Details</small>
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="@if (User.IsInRole("Submitter") )
+        {
+            @Url.Action("SubmitterTickets", "Tickets")
+        }
+        @if (User.IsInRole("Developer") )
+        {
+            @Url.Action("AssignedTickets", "Tickets")
+        }
+        @if (User.IsInRole("Project Manager") )
+        {
+            @Url.Action("AssignedProjects", "Tickets")
+        }
+                @if (User.IsInRole("Admin") )
+        {
+            @Url.Action("Index", "Tickets")
+        }"><i class="fa fa-dashboard"></i> Projects</a></li>
+        <li class="active">Details</li>
+    </ol>
+</section>
+
+    <div class="col-lg-12" style="margin-top:20px;">
+        <section class="col-lg-6 col-lg-offset-3 connectedSortable">
+            <!-- quick email widget -->
+            <div class="box box-info">
+                <div class="box-header">
+                    <i class="fa fa-clipboard"></i>
+                    <h3 class="box-title">Project Details</h3>
+                </div>
+                <hr />
+                <dl class="dl-horizontal">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Title)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.Title)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Body)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.Body)
+                    </dd>
+                    <dt>
+                        Project Manager
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.Assigned.DisplayName)
+                    </dd>
+                    <dt>
+                        @Html.DisplayNameFor(model => model.CreatedDate)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.CreatedDate)
+                    </dd>
+
+                    @*<dt>
+                            @Html.DisplayNameFor(model => model.UpdatedDate)
+                        </dt>
+
+                        <dd>
+                            @Html.DisplayFor(model => model.UpdatedDate)
+                        </dd>*@
+
+                    <dt>
+                        @Html.DisplayNameFor(model => model.IsActive)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.IsActive)
+                    </dd>
+
+                </dl>
+
+                <p class="text-center">
+                    @if (User.IsInRole("Admin") || User.IsInRole("Project Manager"))
+                    {
+                        @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) <span> | </span>
+                        @Html.ActionLink("Assign", "ProjectUser", new { id = Model.Id }) <span> | </span>
+                    }
+                    @Html.ActionLink("Back to Projects", "Index")
+                </p>
+                <hr />
+            </div>
+        </section>
+    </div>
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">@Model.Title <small>Tickets</small></h3>
+                    <div class="pull-right">
+                        @Html.ActionLink("Create Ticket", "Create", "Tickets")
+                    </div>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <table id="example2" class="table table-bordered table-hover">
+                        <thead>
+
+                            <tr>
+                                <th>
+                                    Ticket
+                                </th>
+                                <th>
+                                    Priority
+                                </th>
+                                <th>
+                                    Type
+                                </th>
+                                <th>
+                                    Assigned To
+                                </th>
+                                <th>
+                                    Created Date
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        @foreach (var item in Model.Tickets)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Title)
+                                </td>
+                                <td>
+                                    @if (item.TicketPriority.Name == "Urgent")
+                                    {
+                                        <i class="fa fa-circle-o text-red"></i>
+                                    }
+                                    @if (item.TicketPriority.Name == "High")
+                                    {
+                                        <i class="fa fa-circle-o text-orange"></i>
+                                    }
+                                    @if (item.TicketPriority.Name == "Medium")
+                                    {
+                                        <i class="fa fa-circle-o text-yellow"></i>
+                                    }
+                                    @if (item.TicketPriority.Name == "Low")
+                                    {
+                                        <i class="fa fa-circle-o text-aqua"></i>
+                                    }
+                                    @Html.DisplayFor(modelItem => item.TicketPriority.Name)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.TicketType.Name)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.AssignedToUser.FirstName)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.CreatedDate)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.TicketStatus.Name)
+                                </td>
+                                <td>
+                                    <a href="@Url.Action("Details", "Tickets", new { id = item.Id })">Details</a>
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Project Manager") || User.IsInRole("Developer"))
+                                    {
+                                        <span> | </span>
+                                                        <a href="@Url.Action("Edit", "Tickets", new { id = item.Id })">Edit</a>
+                                                        <span> | </span>
+                                                        <a href="@Url.Action("Delete", "Tickets", new { id = item.Id })">Delete</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<p>
+    @Html.ActionLink("Back to Projects", "Index")
+</p>
